@@ -1,0 +1,17 @@
+name: 'Locko Config'
+description: 'Pull variables and secrets from the Locko secret management server and export them as environment variables'
+author: 'barelyacompany'
+branding:
+  icon: 'lock'
+  color: 'blue'
+inputs:
+  api-key:
+    description: 'Locko API key used to authenticate with the server'
+    required: true
+  server-url:
+    description: 'Base URL of the Locko server'
+    required: false
+    default: 'https://api-locko.barelyacompany.com/api'
+runs:
+  using: 'docker'
+  image: 'docker://tylerdgenius/locko-config:v1.0.0'
