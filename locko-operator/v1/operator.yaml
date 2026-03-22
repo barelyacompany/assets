@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: locko-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locko-operator
+  namespace: locko-system
+  labels:
+    app: locko-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locko-operator
+  template:
+    metadata:
+      labels:
+        app: locko-operator
+    spec:
+      serviceAccountName: locko-operator
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: manager
+          image: tylerdgenius/locko-operator:latest
+          imagePullPolicy: Always
+          command: [/manager]
+          args:
+            - --leader-elect=true
+            - --metrics-bind-address=:8080
+            - --health-probe-bind-address=:8081
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: health
+              containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
