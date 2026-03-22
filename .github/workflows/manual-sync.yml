@@ -1,0 +1,50 @@
+name: Manual Release Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Source repo name (e.g. locko-operator)"
+        required: true
+        type: string
+      version:
+        description: "Tag to sync from (e.g. v1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  sync:
+    name: Sync ${{ inputs.repo }}@${{ inputs.version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout assets repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASES_PAT }}
+
+      - name: Checkout source repo at tag
+        uses: actions/checkout@v4
+        with:
+          repository: barelyacompany/${{ inputs.repo }}
+          token: ${{ secrets.RELEASES_PAT }}
+          ref: ${{ inputs.version }}
+          path: source-repo
+
+      - name: Copy config files into versioned folder
+        run: |
+          DEST="${{ inputs.repo }}/${{ inputs.version }}"
+          mkdir -p "$DEST"
+          cp source-repo/config/crd/*.yaml "$DEST/" 2>/dev/null || true
+          cp source-repo/config/rbac/*.yaml "$DEST/" 2>/dev/null || true
+          cp source-repo/config/deploy/*.yaml "$DEST/" 2>/dev/null || true
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${{ inputs.repo }}/${{ inputs.version }}/"
+          git commit -m "${{ inputs.repo }} ${{ inputs.version }} [manual sync]"
+          git push
