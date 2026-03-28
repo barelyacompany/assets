@@ -64,6 +64,13 @@ spec:
                   type: integer
                   minimum: 10
                   default: 300
+                serviceSlug:
+                  type: string
+                  description: >
+                    Slug of the service whose config should be fetched.
+                    Required when using org-scoped keys (lko_ prefix).
+                    When set, the operator appends ?service_slug=<value>
+                    to the lockoUrl before calling the API.
                 containers:
                   type: array
                   items:
