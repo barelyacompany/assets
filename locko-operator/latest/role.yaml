@@ -19,10 +19,10 @@ rules:
     resources: [deployments, statefulsets]
     verbs: [get, list, watch, update, patch]
 
-  # Read token secrets; create and update managed env secrets
+  # Read token secrets; create, update, and delete managed env secrets
   - apiGroups: [""]
     resources: [secrets]
-    verbs: [get, list, watch, create, update, patch]
+    verbs: [get, list, watch, create, update, patch, delete]
 
   # Leader election
   - apiGroups: [""]
