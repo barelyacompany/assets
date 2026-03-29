@@ -1,0 +1,107 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: lockoconfigs.locko.barelyacompany.com
+spec:
+  group: locko.barelyacompany.com
+  names:
+    kind: LockoConfig
+    listKind: LockoConfigList
+    plural: lockoconfigs
+    singular: lockoconfig
+    shortNames:
+      - lc
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Target
+          type: string
+          jsonPath: .spec.targetRef.name
+        - name: Last Sync
+          type: date
+          jsonPath: .status.lastSyncTime
+        - name: Keys
+          type: integer
+          jsonPath: .status.syncedKeys
+        - name: Synced
+          type: string
+          jsonPath: .status.conditions[?(@.type=="Synced")].status
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [lockoUrl, tokenSecretRef, targetRef]
+              properties:
+                lockoUrl:
+                  type: string
+                  description: Full URL of the locko runtime-config endpoint.
+                tokenSecretRef:
+                  type: object
+                  required: [name, key]
+                  properties:
+                    name:
+                      type: string
+                    key:
+                      type: string
+                targetRef:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                    kind:
+                      type: string
+                      enum: [Deployment, StatefulSet]
+                      default: Deployment
+                syncIntervalSeconds:
+                  type: integer
+                  minimum: 10
+                  default: 300
+                serviceSlug:
+                  type: string
+                  description: >
+                    Slug of the service whose config should be fetched.
+                    Required when using org-scoped keys (lko_ prefix).
+                    When set, the operator appends ?service_slug=<value>
+                    to the lockoUrl before calling the API.
+                containers:
+                  type: array
+                  items:
+                    type: string
+                  description: >
+                    Optional list of container names to inject into.
+                    Defaults to all containers when omitted.
+            status:
+              type: object
+              properties:
+                lastSyncTime:
+                  type: string
+                  format: date-time
+                syncedKeys:
+                  type: array
+                  items:
+                    type: string
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required: [type, status, reason, lastTransitionTime]
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
