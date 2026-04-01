@@ -24,7 +24,7 @@ rules:
     resources: [secrets]
     verbs: [get, list, watch, create, update, patch, delete]
 
-  # Leader election
+  # Managed env configmaps; leader election
   - apiGroups: [""]
     resources: [configmaps]
     verbs: [get, list, watch, create, update, patch, delete]
