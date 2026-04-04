@@ -1,0 +1,39 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: locko-operator-role
+rules:
+  # Manage our own CRD instances
+  - apiGroups: [locko.barelyacompany.com]
+    resources: [lockoconfigs]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [locko.barelyacompany.com]
+    resources: [lockoconfigs/status]
+    verbs: [get, update, patch]
+  - apiGroups: [locko.barelyacompany.com]
+    resources: [lockoconfigs/finalizers]
+    verbs: [update]
+
+  # Patch target workloads
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets]
+    verbs: [get, list, watch, update, patch]
+  - apiGroups: [batch]
+    resources: [cronjobs]
+    verbs: [get, list, watch, update, patch]
+
+  # Read token secrets; create, update, and delete managed env secrets
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [get, list, watch, create, update, patch, delete]
+
+  # Managed env configmaps; leader election
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, patch]
