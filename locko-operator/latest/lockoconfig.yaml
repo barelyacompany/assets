@@ -58,7 +58,7 @@ spec:
                       type: string
                     kind:
                       type: string
-                      enum: [Deployment, StatefulSet]
+                      enum: [Deployment, StatefulSet, CronJob]
                       default: Deployment
                 syncIntervalSeconds:
                   type: integer
